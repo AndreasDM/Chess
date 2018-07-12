@@ -30,6 +30,8 @@ public class HoverController : MonoBehaviour {
             //set position
             lastHoveredSquare = hit.collider.GetComponent<RectTransform>();
         }
-        
+        else
+            lastHoveredSquare = null;
     }
+
 }

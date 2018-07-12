@@ -6,6 +6,8 @@ TagManager:
   tags:
   - square
   - king
+  - white
+  - black
   layers:
   - Default
   - TransparentFX
@@ -42,4 +44,13 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: squareLayer
+    uniqueID: 824669921
+    locked: 0
+  - name: pieceLayer
+    uniqueID: 1408663119
+    locked: 0
+  - name: dragLayer
+    uniqueID: 3484978667
     locked: 0

@@ -3,15 +3,26 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using System.Linq;
 
-public class PieceGrab : MonoBehaviour, IDragHandler, IEndDragHandler {
+public class PieceGrab : MonoBehaviour, IDragHandler, IEndDragHandler, IBeginDragHandler
+{
 
-    private GameObject[] squares;
-    private GameObject piece;
-    private Vector3 diff;
-    private bool isDrag;
+    //private GameObject[] squares;
+    private List<GameObject> whitePieces;
+    private List<GameObject> blackPieces;
+    private List<GameObject> allPieces;
+    private Vector3 diff = Vector3.zero;
+    private bool isDrag = false;
     private Color32 lastColor;
     private Transform canvasTransform;
+    private Vector3 beforeSquare;
+
+    public void OnBeginDrag(PointerEventData eventData)
+    {
+        diff = gameObject.GetComponent<RectTransform>().position - Input.mousePosition;
+        beforeSquare = HoverController.lastHoveredSquare.position;
+    }
 
     public void OnDrag(PointerEventData eventData)
     {   
@@ -65,9 +76,61 @@ public class PieceGrab : MonoBehaviour, IDragHandler, IEndDragHandler {
     {
         if (HoverController.lastHoveredSquare != null)
         {
-            gameObject.transform.SetPositionAndRotation(HoverController.lastHoveredSquare.position, new Quaternion());
-        }
+            // before placing the piece
+            // check if there is a piece at that square
+            // 1. loop through squares
+            // 2. if piece at same position as square
+            // 3. determine if piece is white or black
+            // 4. if piece is same color as gameObject
+            //      do nothing
+            //    else
+            //      find piece at the same position as square and destroy it
 
+            string squareName = HoverController.lastHoveredSquare.name;
+            GameObject square = GameObject.Find(squareName);
+            bool found = false;
+            bool busySquare = false;
+            
+            foreach (GameObject piece in allPieces)
+            {
+                if (piece != null && piece.transform.position.Equals(square.transform.position))
+                {
+                    print("same position");
+                    if (!gameObject.tag.Equals(piece.tag))
+                    {
+                        // different color piece
+                        // destroy piece
+                        Destroy(piece);
+
+                        // remove from list
+                        allPieces.Remove(piece);
+                        
+                        // object found
+                        //found = true;
+
+                        // break out of loop
+                        break;
+                    }
+                    else // square is occupied by same colored piece
+                    {
+                        busySquare = true;
+                    }
+                }
+            }
+
+            if (!busySquare)
+            {
+                gameObject.transform.SetPositionAndRotation(HoverController.lastHoveredSquare.position, Quaternion.identity);
+            }
+            else
+            {
+                gameObject.transform.SetPositionAndRotation(beforeSquare, Quaternion.identity);
+            }
+        }
+        else
+        {
+            gameObject.transform.SetPositionAndRotation(beforeSquare, Quaternion.identity);
+        }
         /*
         // reset highlight color
         if (piece != null)
@@ -82,11 +145,18 @@ public class PieceGrab : MonoBehaviour, IDragHandler, IEndDragHandler {
 
     // Use this for initialization
     void Start () {
-        diff = Vector3.zero;
-        isDrag = false;
         //squares = GameObject.FindGameObjectsWithTag("square");
+        
+
         canvasTransform = GameObject.Find("Canvas").transform;
-	}
+
+        GameObject[] arrw = GameObject.FindGameObjectsWithTag("white");
+        GameObject[] arrb = GameObject.FindGameObjectsWithTag("black");
+        whitePieces = arrw.ToList<GameObject>();
+        blackPieces = arrb.ToList<GameObject>();
+        allPieces = whitePieces;
+        allPieces.AddRange(blackPieces);
+    }
 	
 	// Update is called once per frame
 	void Update () {
@@ -96,7 +166,9 @@ public class PieceGrab : MonoBehaviour, IDragHandler, IEndDragHandler {
             diff.x = gameObject.GetComponent<RectTransform>().position.x - Input.mousePosition.x;
             diff.y = gameObject.GetComponent<RectTransform>().position.y - Input.mousePosition.y;
             */
-            diff = gameObject.GetComponent<RectTransform>().position - Input.mousePosition;
+            /*diff = gameObject.GetComponent<RectTransform>().position - Input.mousePosition;
+            beforeSquare = HoverController.lastHoveredSquare.position;
+            */
         }
 	}
 }
